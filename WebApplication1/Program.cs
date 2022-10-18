@@ -1,7 +1,8 @@
 // Database
 using WebApplication1.DB;
 
-DataAcessLayer.Instance.ResetDb();
+DataAccessLayer DAO = new();
+DAO.ResetDb();
 
 
 // Web App

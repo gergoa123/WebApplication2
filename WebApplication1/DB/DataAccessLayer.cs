@@ -2,28 +2,11 @@
 
 namespace WebApplication1.DB
 {
-    public class DataAcessLayer
+    public class DataAccessLayer
     {
-        private static DataAcessLayer? instance = null;
-        private readonly Context ctx;
-
-        public static DataAcessLayer Instance
-        {
-            get
-            {
-                instance ??= new DataAcessLayer();
-
-                return instance; 
-            }
-        }
-
-        private DataAcessLayer()
-        {
-            ctx = new Context();
-        }
-
         public void ResetDb()
         {
+            Context ctx = new();
             ctx.Database.EnsureDeleted();
             ctx.Database.EnsureCreated();
 
@@ -125,6 +108,7 @@ namespace WebApplication1.DB
 
         public List<Student> GetStudents()
         {
+            Context ctx = new();
             List<Student> students = new();
             foreach (var student in ctx.Studenti)
             {
@@ -133,58 +117,53 @@ namespace WebApplication1.DB
             return students;
         }
 
-        public Student GetStudentById(int id) => ctx.Studenti.Find(id);
-
-        public string CreateStudent(Student stud)
+        public Student GetStudentById(int id)
         {
+            Context ctx = new();
+            return ctx.Studenti.Find(id);
+        }
+
+        public void CreateStudent(Student stud)
+        {
+            Context ctx = new();
             var res1 = ctx.Studenti.Add(stud);
 
             var res2 = ctx.SaveChanges();
 
-            if (res1 != null && res2 >= 0)
+            if (!(res1 != null && res2 >= 0))
             {
-                return "";
-            }
-            else
-            {
-                return "Create error";
+                throw new Exception("Create error");
             }
         }
 
-        public string DeleteStudent(int id)
+        public void DeleteStudent(int id)
         {
-            var res3 = ctx.Studenti.Find(id);
+            Context ctx = new();
+            var student = ctx.Studenti.Find(id);
 
-            if (res3 == null)
+            if (student == null)
             {
-                return "Delete error: Not found";
+                throw new Exception("Find error");
             }
-
-            var res4 = ctx.Studenti.Remove(res3);
-
-            if (res4 == null)
+            if (ctx.Studenti.Remove(student) == null)
             {
-                return "Delete error: Couldn't remove";
+                throw new Exception("Deletion error");
             }
-
-            var res5 = ctx.SaveChanges();
-
-            if (res5 < 0)
+            if (ctx.SaveChanges() < 0)
             {
-                return "Delete error";
+                throw new Exception("Save error");
             }
-
-            return "";
             
         }
 
-        public string ChangeStudent(Student stud)
+        public void ChangeStudent(Student stud)
         {
+            Context ctx = new();
             var student = ctx.Studenti.Include(s => s.Adresa).FirstOrDefault(s => s.Id == stud.Id);
 
             if (student == null)
             {
-                return "Student not found";
+                throw new Exception("Student not found");
             }
             else { 
                 student.Nume = stud.Nume;
@@ -196,19 +175,17 @@ namespace WebApplication1.DB
                 student.Adresa.Id = stud.Adresa.Id;
                  
                 ctx.SaveChanges();
-            
-                return "";
             }
-
         }
 
-        public int ChangeStudentAddress(int studentId, Adresa adresa)
+        public void ChangeStudentAddress(int studentId, Adresa adresa)
         {
+            Context ctx = new();
             var student = ctx.Studenti.Include(s => s.Adresa).FirstOrDefault(s => s.Id == studentId);
 
             if (student == null)
             {
-                return 0;
+                throw new Exception("An error occured");
             }
             if (student.Adresa == null)
             {
@@ -221,11 +198,10 @@ namespace WebApplication1.DB
                         Oras = adresa.Oras
                     };
                     ctx.SaveChanges();
-                    return 2;
                 }
                 else
                 {
-                    return 0;
+                    throw new Exception("An error occured");
                 }
             }
             student.Adresa.Numar = adresa.Numar;
@@ -233,68 +209,51 @@ namespace WebApplication1.DB
             student.Adresa.Oras = adresa.Oras;
 
             ctx.SaveChanges();
-
-            return 1;
         }
 
-        public int DeleteStudentPlus(int studentId)
+        public void DeleteStudentPlus(int studentId)
         {
+            Context ctx = new();
             var student = ctx.Studenti.Include(s => s.Adresa).FirstOrDefault(s => s.Id == studentId);
-            var res = ctx.Studenti.Remove(student);
 
-            if (res == null)
+            if (student == null ||  ctx.Studenti.Remove(student) == null)
             {
-                return 1;
+                throw new Exception("An error occured");
             }
-            else
-            {
-                ctx.SaveChanges();
-                return 0;
-            }
+            ctx.SaveChanges();
 
         }
         
-        public string CreateSubject(Subject subject)
+        public void CreateSubject(Subject subject)
         {
-            var res1 = ctx.Subjects.Add(subject);
-            
-            var res2 = ctx.SaveChanges();
-
-            if (res1 != null && res2 >= 0)
+            Context ctx = new();
+            if (ctx.Subjects.Add(subject) == null || ctx.SaveChanges() < 0)
             {
-                return "";
-            }
-            else
-            {
-                return "Subject creation error";
+                throw new Exception("Subject creation error");
             }
         }
 
-        public string AddMark(int studId, Mark mark)
+        public void AddMark(int studId, Mark mark)
         {
+            Context ctx = new();
             var student = ctx.Studenti.Find(studId);
             
             if(student == null)
             {
-                return "No student found";
+                throw new Exception("No student found");
             }
 
             student.Marks.Add(mark);
 
-            var res = ctx.SaveChanges();
-
-            if (res >= 0)
+            if (ctx.SaveChanges() < 0)
             {
-                return "";
-            }
-            else
-            {
-                return "Mark add error";
+                throw new Exception("Mark add error");
             }
         }
 
         public List<Mark> GetMarks()
         {
+            Context ctx = new();
             List<Mark> marks = new();
             foreach (var Mark in ctx.Marks)
             {
@@ -302,8 +261,6 @@ namespace WebApplication1.DB
             }
 
             return marks;
-           
-
         }
     }
 }

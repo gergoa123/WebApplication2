@@ -13,14 +13,15 @@ namespace WebApplication1.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
         public IActionResult GetAllStudents()
         {
-            List<Student> students = DataAcessLayer.Instance.GetStudents();
+            DataAccessLayer DAO = new();
+            List<Student> students = DAO.GetStudents();
 
             if (students.Count <= 0)
             {
-                return NotFound();
+                return NotFound(students);
             } else
             {
-                return Ok(DataAcessLayer.Instance.GetStudents());
+                return Ok(students);
             }
         }
 
@@ -29,15 +30,16 @@ namespace WebApplication1.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
         public IActionResult GetStudentById([FromQuery][Required] int studentId)
         {
-            Student student = DataAcessLayer.Instance.GetStudentById(studentId);
+            DataAccessLayer DAO = new();
+            Student student = DAO.GetStudentById(studentId);
 
             if (student == null)
             {
-                return NotFound();
+                return NotFound(new Student());
             }
             else
             {
-                return Ok(DataAcessLayer.Instance.GetStudentById(studentId));
+                return Ok(DAO.GetStudentById(studentId));
             }
         }
 
@@ -46,15 +48,15 @@ namespace WebApplication1.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult CreateStudent([FromBody][Required] Student stud)
         {
-            var res = DataAcessLayer.Instance.CreateStudent(stud);
-
-            if (res == "")
+            DataAccessLayer DAO = new();
+            try
             {
-                return Ok();
+                DAO.CreateStudent(stud);
+                return Ok("Student created");
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest(res);
+                return BadRequest(ex.ToString());
             }
         }
 
@@ -63,14 +65,14 @@ namespace WebApplication1.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult DeleteStudent([FromQuery][Required] int studentId)
         {
-            string res = DataAcessLayer.Instance.DeleteStudent(studentId);
-            if (res == "")
-            {
-                return Ok();
+            DataAccessLayer DAO = new();
+            try { 
+                DAO.DeleteStudent(studentId);
+                return Ok("Deleted student");
             }
-            else
+            catch(Exception ex)
             {
-                return BadRequest(res);
+                return BadRequest(ex.ToString());
             }
         }
 
@@ -79,17 +81,16 @@ namespace WebApplication1.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult ChangeStudent([FromBody][Required] Student stud)
         {
-        string res = DataAcessLayer.Instance.ChangeStudent(stud);
-        if (res == "")
+            DataAccessLayer DAO = new();
+            try
             {
-                return Ok();
+                DAO.ChangeStudent(stud);
+                return Ok("Changed student");
             }
-        else
+            catch (Exception ex)
             {
-                return BadRequest(res);
+                return BadRequest(ex.ToString());
             }
-        
-        
         }
         
         [HttpPut("Change-Student-Address")]
@@ -97,19 +98,15 @@ namespace WebApplication1.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult ChangeStudentAddress([FromQuery][Required] int studentId, [FromBody][Required] Adresa adresa)
         {
-           var res = DataAcessLayer.Instance.ChangeStudentAddress(studentId, adresa);
-            if (res == 1)
+            DataAccessLayer DAO = new();
+            try
             {
-                return Ok();
-                
-            }
-            else if (res == 2)
-            {
+                DAO.ChangeStudentAddress(studentId, adresa);
                 return Ok();
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.ToString());
             }
         }
 
@@ -118,14 +115,15 @@ namespace WebApplication1.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult DeleteStudentPlus([FromQuery][Required] int studentId)
         {
-            var res = DataAcessLayer.Instance.DeleteStudentPlus(studentId);
-            if (res == 1)
+            DataAccessLayer DAO = new();
+            try
             {
-                return BadRequest();
-            }
-            else
-            {
+                DAO.DeleteStudentPlus(studentId);
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
             }
         }
 
@@ -134,32 +132,50 @@ namespace WebApplication1.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult CreateSubject([FromBody][Required] Subject subject)
         {
-            var res = DataAcessLayer.Instance.CreateSubject(subject);
-
-            if(res == "")
+            DataAccessLayer DAO = new();
+            try
             {
+                DAO.CreateSubject(subject);
                 return Ok();
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest(res);
+                return BadRequest(ex.ToString());
             }
         }
 
-        [HttpPatch("AddMark")]
+        [HttpPatch("Add-Mark")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult AddMark([Required] int studentId, [FromBody][Required] Mark mark)
         {
-            var res = DataAcessLayer.Instance.AddMark(studentId, mark);
-
-            if (res == "")
+            DataAccessLayer DAO = new();
+            try
             {
+                DAO.AddMark(studentId, mark);
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+        }
+
+        [HttpGet("Get-All-Marks")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<Mark>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+        public IActionResult GetMarks()
+        {
+            DataAccessLayer DAO = new();
+            List<Mark> marks = DAO.GetMarks();
+
+            if (marks.Count <= 0)
+            {
+                return NotFound(marks);
             }
             else
             {
-                return BadRequest(res);
+                return Ok(marks);
             }
         }
     }
